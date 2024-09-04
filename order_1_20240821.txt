@@ -1,0 +1,5 @@
+Order Receipt - Order #1
+Date: 2024-08-21 08:42:02
+
+Order Items: Hello there. I would like to place an order.
+Customer Name: John.
