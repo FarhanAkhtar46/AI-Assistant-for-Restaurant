@@ -6,6 +6,9 @@ import json
 from datetime import datetime
 import pyaudio
 from deepgram.utils import verboselogs
+import datetime
+import re
+import string
 
 from deepgram import (
     DeepgramClient,
@@ -16,7 +19,8 @@ from deepgram import (
 )
 
 import voice_service_deepgram as vs  # Import your custom voice service
-from rag.AIVoiceAssistant import AIVoiceAssistant
+from rag.AIVoiceAssistant2 import AIVoiceAssistant
+from rag.AIVoiceAssistant3 import CalendarTool
 # DEEPGRAM_API_KEY =  
 # deepgram = Deepgram(DEEPGRAM_API_KEY)
 # Create a Deepgram client using the DEEPGRAM_API_KEY from environment variables
@@ -57,8 +61,19 @@ def main():
                     utterance = " ".join(is_finals)
                     print(f"Speech Final: {utterance}")
                     is_finals = []
+
+                    # Stop execution if the user says "goodbye" or "bye"
+                    if re.search(r'\b(bye|goodbye)\b', utterance, re.IGNORECASE):
+                        print("Detected 'goodbye' or 'bye'. Stopping execution.")
+                        microphone.finish()  # Stop the microphone
+                        dg_connection.finish()  # Close the Deepgram connection
+                        return  # Exit the function to stop further processing
+
+
                     response = ai_assistant.interact_with_llm(utterance)
                     print("AI:", response)
+                    
+                        
 
                     vs.play_text_to_speech_deepgram(response)
                 else:
@@ -87,6 +102,8 @@ def main():
 
         def on_error(self, error, **kwargs):
             print(f"Handled Error: {error}")
+        
+        
 
         def on_unhandled(self, unhandled, **kwargs):
             print(f"Unhandled Websocket Message: {unhandled}")
@@ -153,3 +170,10 @@ def main():
 
 if __name__ == "__main__":
     main()
+    calendar_tool = CalendarTool()
+    event_name = "Test Booking"
+    event_datetime = datetime.datetime.now() + datetime.timedelta(days=1)  # Test for tomorrow
+    event_description = "Test Table Booking"
+        
+    result = calendar_tool.create_event(event_name, event_datetime, event_description)
+    print(result)  # Check if event creation is successful and an event ID is returned
